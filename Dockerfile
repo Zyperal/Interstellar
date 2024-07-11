@@ -1,12 +1,16 @@
-FROM node:bookworm-slim
-ENV NODE_ENV=production
+on:
+  [workflow_dispatch]
 
-WORKDIR /app
-
-COPY ["package.json", "./"]
-
-RUN npm install
-
-COPY . .
-
-CMD [ "node", "index.js" ]
+jobs:
+  publish_image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+      - name: build
+        run: |
+          docker build . -t ${{ secrets.DOCKERHUB_USERNAME}}/${{ secrets.DOCKERHUB_NAME}}:latest
+      - name: publish
+        run: |
+          docker login -u ${{ secrets.DOCKERHUB_USERNAME}} -p ${{ secrets.DOCKERHUB_TOKEN}}
+          docker push ${{ secrets.DOCKERHUB_USERNAME}}/${{ secrets.DOCKERHUB_NAME}}:latest
